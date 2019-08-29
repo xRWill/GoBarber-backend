@@ -4,9 +4,7 @@ import User from '../models/User';
 class UserController {
   // List Users
   async index(req, res) {
-    console.log('entrando no index');
     const users = await User.findAll().catch(err => console.log(err));
-    console.log('users: ', users);
     return res.json(users);
   }
 
