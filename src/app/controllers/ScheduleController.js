@@ -1,14 +1,30 @@
+import { parseISO, startOfDay, endOfDay } from 'date-fns';
+import { Op } from 'sequelize';
+
 import User from '../models/User';
 import File from '../models/File';
 import Appointment from '../models/Appointment';
 
 class ScheduleController {
   async index(req, res) {
-    const { page = 1 } = req.query;
+    const { page = 1, date = new Date() } = req.query;
 
+    const checkUserProvider = await User.findOne({
+      where: {
+        id: req.userId,
+        provider: true,
+      },
+    });
+    if (!checkUserProvider) {
+      return res.status(400).json({ error: 'User is not a provider.' });
+    }
+
+    const parsedDate = parseISO(date);
     const appointments = await Appointment.findAll({
       where: {
-        user_id: req.userId,
+        provider_id: req.userId,
+        canceled_at: null,
+        date: { [Op.between]: [startOfDay(parsedDate), endOfDay(parsedDate)] },
       },
       limit: 20,
       offset: (page - 1) * 20,
@@ -17,14 +33,14 @@ class ScheduleController {
       include: [
         {
           model: User,
-          as: 'provider',
+          as: 'user',
           attributes: ['id', 'name'],
           include: [{ model: File, as: 'avatar', attributes: ['path', 'url'] }],
         },
       ],
     });
 
-      return res.json(appointments);
+    return res.json(appointments);
   }
 }
 
