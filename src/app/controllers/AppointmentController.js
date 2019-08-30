@@ -41,6 +41,17 @@ class AppointmentController {
       return res.status(400).json({ error: 'Validation fails' });
     }
     const { provider_id, date } = req.body;
+
+    /**
+     * Cant schedule with yourself user == provider
+     */
+    console.log('ID usuario logado', req.userId, provider_id);
+    if (provider_id == req.userId) {
+      return res
+        .status(401)
+        .json({ error: 'You cant create appointments with yourself.' });
+    }
+
     /**
      * Check if provider_id is a provider
      */
