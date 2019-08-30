@@ -8,7 +8,6 @@ import {
   format,
   isAfter,
 } from 'date-fns';
-import { min } from 'moment';
 import Appointment from '../models/Appointment';
 
 class AvailableController {
