@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import authConfig from '../../config/auth';
 
 import User from '../models/User';
+import File from '../models/File';
 
 class SessionController {
   // Create Session on User sign-in
@@ -20,7 +21,12 @@ class SessionController {
     }
 
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: { email },
+      include: [
+        { model: File, as: 'avatar', attributes: ['id', 'path', 'url'] },
+      ],
+    });
 
     // Check user exists in DB
     if (!user) {
@@ -32,10 +38,10 @@ class SessionController {
       return res.status(401).json({ error: 'Password does not match.' });
     }
 
-    const { id, name } = user;
+    const { id, name, provider, avatar } = user;
 
     return res.json({
-      user: { id, name, email },
+      user: { id, name, email, provider, avatar },
       token: jwt.sign({ id }, authConfig.secret, {
         expiresIn: authConfig.expiresIn,
       }),
